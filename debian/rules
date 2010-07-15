@@ -3,5 +3,6 @@
 %:
 	dh  $@
 
-override_dh_autoinstall:
-	install --mode=0755 buttond /sbin/bubba-buttond
+override_dh_install:
+	dh_install
+	install --mode=0755 buttond debian/bubba-buttond/sbin/bubba-buttond
