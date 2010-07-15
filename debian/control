@@ -1,0 +1,13 @@
+Source: bubba-buttond
+Section: utils
+Priority: extra
+Maintainer: Carl Fürstenberg <carl@excito.com>
+Build-Depends: debhelper (>= 7.2)
+Standards-Version: 3.8.4
+
+Package: bubba-buttond
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Bubba platform button daemon interceptor
+ This package provides an daemon that intercepts bubba
+ power button events.
