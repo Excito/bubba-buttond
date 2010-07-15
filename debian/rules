@@ -2,3 +2,6 @@
 
 %:
 	dh  $@
+
+override_dh_autoinstall:
+	install --mode=0755 buttond /sbin/bubba-buttond
