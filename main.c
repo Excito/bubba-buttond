@@ -13,19 +13,36 @@
 #include <errno.h>
 #include <stddef.h>
 
-#define DEVICE 			"/dev/input/by-path/platform-gpio-keys-event"
-#define PIDFILE			"/var/run/buttond.pid"
-#define REBOOTCMD		"/sbin/reboot"
-#define B_KEY_DOWN		0x1
-#define B_KEY_UP		0x0
+#ifndef DEVICE
+#define DEVICE 				"/dev/input/by-path/platform-gpio-keys-event"
+#endif
+
+#ifndef PIDFILE
+#define PIDFILE				"/var/run/buttond.pid"
+#endif
+
+#ifndef REBOOTCMD
+#define REBOOTCMD			"/sbin/reboot"
+#endif
+
+#ifndef MTD_PART
+#define MTD_PART 			"/dev/mtd2"
+#endif
+
+#define BLOCK_START			0x110000
+#define BLOCK_SIZE			0x10000
+#define REBOOT_MAGIC		0xdeadbeef
+
+#define B_KEY_DOWN			0x1
+#define B_KEY_UP			0x0
 #define POWER_DOWN_DELAY	2
 
 static struct timeval tim;
 static int dorun = 1;
 static int shutdown = 0;
 
-void devinfo(int fd){
 #ifdef DEBUG
+void devinfo(int fd){
 	char name[256]= "Unknown";
 	char phys[256]= "Unknown";
 
@@ -36,21 +53,22 @@ void devinfo(int fd){
 	}
 
 	if(ioctl(fd, EVIOCGPHYS(sizeof(phys)), phys) < 0) {
-	    perror("event ioctl");
+		perror("event ioctl");
 	}else{
 		printf("Path of device: %s\n",name);
 	}
-#endif
 }
 
 void dump_event(struct input_event *ev){
-#ifdef DEBUG
 	printf("Time %ld.%06ld ",ev->time.tv_sec,ev->time.tv_usec);
 	printf("Type : %d ",ev->type);
 	printf("Code : %d ",ev->type);
 	printf("Value: %d\n",ev->value);
-#endif
 }
+#else
+#define devinfo(x)
+#define dump_event(x)
+#endif /*DEBUG*/
 
 static void write_pidfile(void){
 	FILE *fil;
@@ -72,10 +90,6 @@ void sighandler(int signum){
 	}
 }
 
-#define MTD_PART 	"/dev/mtd2"
-#define BLOCK_START	0x110000
-#define BLOCK_SIZE	0x10000
-#define REBOOT_MAGIC	0xdeadbeef
 
 static int write_magic(){
 	unsigned long value = REBOOT_MAGIC;
@@ -103,7 +117,7 @@ static int write_magic(){
 		syslog(LOG_ERR,"Failed to write value: %m");
 		return 1;
 	}
-	
+
 	close(fd);
 	return 0;
 } 
@@ -115,7 +129,7 @@ int main(int argc, char** argv){
 	ssize_t r;
 
 	struct input_event ev;
-	
+
 	openlog("buttond",LOG_PERROR,LOG_DAEMON);
 
 	if (getuid()!=0) {
@@ -157,7 +171,7 @@ int main(int argc, char** argv){
 				tim.tv_sec = ev.time.tv_sec;
 				tim.tv_usec = ev.time.tv_usec;
 			}else if(ev.value == B_KEY_UP && tim.tv_sec > 0){
-				
+
 				if( ( ev.time.tv_sec - tim.tv_sec)>=POWER_DOWN_DELAY){
 					syslog(LOG_NOTICE,"Power down");
 					dorun = 0;
@@ -169,7 +183,7 @@ int main(int argc, char** argv){
 			}
 
 		}else{
-			syslog(LOG_NOTICE,"Got event %u bytes",r);
+			syslog(LOG_NOTICE,"Got event %zu bytes",r);
 		}	
 	}
 
@@ -180,7 +194,7 @@ int main(int argc, char** argv){
 			system(REBOOTCMD);
 		}
 	}
-	
+
 	close(fd);
 	syslog(LOG_NOTICE, "Daemon terminating");
 	closelog();
