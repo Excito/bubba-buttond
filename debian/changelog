@@ -1,8 +1,8 @@
-bubba-buttond (1.2ubuntu1) unstable; urgency=low
+bubba-buttond (1.3) unstable; urgency=low
 
   * Added write magic application
 
- -- Tor Krill <tor@excito.com>  Fri, 16 Jul 2010 16:49:14 +0200
+ -- Carl Fürstenberg <carl@excito.com>  Mon, 19 Jul 2010 14:50:51 +0200
 
 bubba-buttond (1.2) unstable; urgency=low
 
