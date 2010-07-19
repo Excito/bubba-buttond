@@ -9,9 +9,12 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#define MTD_PART 	"/dev/mtd2"
-#define BLOCK_START	0x110000
-#define BLOCK_SIZE	0x10000
+#ifndef MTD_PART
+#define MTD_PART            "/dev/mtd2"
+#endif
+
+#define BLOCK_START         0x110000
+#define BLOCK_SIZE          0x10000
 
 
 int main(int argc, char** argv){
@@ -23,7 +26,7 @@ int main(int argc, char** argv){
 		fprintf(stderr,"Usage: write-magic value\n");
 		return 1;
 	}
-	
+
 	value = strtoul(argv[1],NULL,0);
 
 	if( (fd = open(MTD_PART,O_RDWR)) == -1){
@@ -46,7 +49,7 @@ int main(int argc, char** argv){
 		perror("Failed to write value");
 		return 1;
 	}
-	
+
 	close(fd);
 
 	return 0;

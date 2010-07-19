@@ -4,6 +4,7 @@ CFLAGS_EXTRA=\
 			 -Wall \
 			 -Wextra \
 			 -Wno-unused-result \
+			 -std=gnu99 \
 			 -DPIDFILE="\"/var/run/bubba-buttond.pid\"" \
 			 -DREBOOTCMD="\"/sbin/reboot\"" \
 			 -DDEVICE="\"/dev/input/by-path/platform-gpio-keys-event\"" \
@@ -13,17 +14,19 @@ LDFLAGS_EXTRA=
 APP=buttond
 APP_SRC=main.c
 
-SOURCES=$(APP_SRC) $(APP2_SRC)
 
-OBJS=$(APP_SRC:%.c=%.o)
+OBJ=$(APP_SRC:%.c=%.o)
 
 APP2=write-magic
 APP2_SRC=write-magic.c
-OBJS2=$(APP2_SRC:%.c=%.o)
+OBJ2=$(APP2_SRC:%.c=%.o)
 
+SOURCES=$(APP_SRC) $(APP2_SRC)
+APPS=$(APP) $(APP2)
+OBJS=$(OBJ) $(OBJ2)
 DEPDIR = .deps
 
-all: pre $(APP) $(APP2)
+all: pre $(APPS)
 
 %.o : %.c
 	$(COMPILE.c) $(CFLAGS_EXTRA) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -o $@ $<
@@ -34,15 +37,15 @@ all: pre $(APP) $(APP2)
 pre:
 	@@if [ ! -d .deps ]; then mkdir .deps; fi
 
-$(APP): $(OBJS)
+$(APP): $(OBJ)
 	$(CC) $(LDFLAGS) $(LDFLAGS_EXTRA) $^ -o $@
 
-$(APP2): $(OBJS2)
+$(APP2): $(OBJ2)
 	$(CC) $(LDFLAGS) $(LDFLAGS_EXTRA) $^ -o $@
 
 
 clean:                                                                          
-	rm -f *~ $(APP) $(APP2) $(OBJS) $(OBJS2)
+	rm -f *~ $(APPS) $(OBJS)
 	rm -rf .deps
 
 .PHONY: clean all pre
