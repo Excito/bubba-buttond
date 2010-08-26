@@ -1,8 +1,9 @@
 bubba-buttond (1.4) vincent hugo; urgency=low
 
   * Added timeout on keypress fixing #1465 
+  * Fix faulty path to daemon in init script
 
- -- Tor Krill <tor@excito.com>  Thu, 26 Aug 2010 14:59:33 +0200
+ -- Tor Krill <tor@excito.com>  Thu, 26 Aug 2010 15:36:15 +0200
 
 bubba-buttond (1.3) unstable; urgency=low
 
