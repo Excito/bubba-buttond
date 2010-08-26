@@ -37,9 +37,10 @@
 #define B_KEY_UP			0x0
 #define POWER_DOWN_DELAY	2
 
-static struct timeval tim;
+// Forwards
+static int write_magic();
+
 static int dorun = 1;
-static int shutdown = 0;
 
 #ifdef DEBUG
 void devinfo(int fd){
@@ -87,6 +88,18 @@ void sighandler(int signum){
 	if (signum==SIGINT || signum==SIGTERM) {
 		syslog(LOG_NOTICE, "Daemon terminating");
 		exit(0);		
+	}
+}
+
+void sigshutdown(int signum){
+	if (signum == SIGALRM){
+		syslog(LOG_NOTICE, "Shuting down system");
+		if(write_magic()==0){
+			system(REBOOTCMD);
+		}
+		dorun=0;
+	}else{
+		syslog(LOG_NOTICE, "Invalid signal received: %d", signum);
 	}
 }
 
@@ -148,7 +161,8 @@ int main(int argc, char** argv){
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGINT, sighandler);
-	signal(SIGTERM,sighandler);
+	signal(SIGTERM, sighandler);
+	signal(SIGALRM, sigshutdown);
 
 
 	if((fd=open(DEVICE,O_RDONLY))<0){
@@ -158,9 +172,6 @@ int main(int argc, char** argv){
 
 	devinfo(fd);
 
-	tim.tv_sec = 0;
-	tim.tv_usec = 0;
-
 	while( dorun && ((r=read(fd,&ev,sizeof(ev)))>0)){
 		if(r==sizeof(ev)){
 			if(ev.type!=EV_KEY){
@@ -168,31 +179,16 @@ int main(int argc, char** argv){
 			}
 			dump_event(&ev);
 			if(ev.value == B_KEY_DOWN){
-				tim.tv_sec = ev.time.tv_sec;
-				tim.tv_usec = ev.time.tv_usec;
-			}else if(ev.value == B_KEY_UP && tim.tv_sec > 0){
-
-				if( ( ev.time.tv_sec - tim.tv_sec)>=POWER_DOWN_DELAY){
-					syslog(LOG_NOTICE,"Power down");
-					dorun = 0;
-					shutdown = 1;
-					break;
-				}else{
-					syslog(LOG_DEBUG,"Not long enough press");
-				}
+				syslog(LOG_DEBUG, "Start shutdown timer");
+				alarm(POWER_DOWN_DELAY);
+			}else if(ev.value == B_KEY_UP){
+				syslog(LOG_DEBUG, "Cancel shutdown timer");
+				alarm(0);
 			}
 
 		}else{
-			syslog(LOG_NOTICE,"Got event %zu bytes",r);
+			syslog(LOG_DEBUG,"Got event %zu bytes",r);
 		}	
-	}
-
-	if(shutdown){
-		// shut down system
-		syslog(LOG_NOTICE, "Shut down system");
-		if(write_magic()==0){
-			system(REBOOTCMD);
-		}
 	}
 
 	close(fd);
