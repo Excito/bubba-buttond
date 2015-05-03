@@ -1,7 +1,7 @@
 Source: bubba-buttond
 Section: utils
 Priority: extra
-Maintainer: Carl Fürstenberg <carl@excito.com>
+Maintainer: Charles Leclerc <leclerc.charles@gmail.com>
 Build-Depends: debhelper (>= 7.2)
 Standards-Version: 3.8.4
 

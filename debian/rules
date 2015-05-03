@@ -2,8 +2,3 @@
 
 %:
 	dh  $@
-
-override_dh_install:
-	dh_install
-	install --mode=0755 buttond debian/bubba-buttond/sbin/bubba-buttond
-	install --mode=0755 write-magic debian/bubba-buttond/sbin/write-magic

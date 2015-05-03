@@ -6,24 +6,18 @@ CFLAGS_EXTRA=\
 			 -Wno-unused-result \
 			 -std=gnu99 \
 			 -DPIDFILE="\"/var/run/bubba-buttond.pid\"" \
-			 -DREBOOTCMD="\"/sbin/reboot\"" \
-			 -DDEVICE="\"/dev/input/by-path/platform-gpio-keys-event\"" \
-			 -DMTD_PART="\"/dev/mtd2\""
+			 -DHALTCMD="\"/sbin/shutdown -h now\"" \
+			 -DDEVICE="\"/dev/input/by-path/platform-gpio-keys-event\""
 LDFLAGS_EXTRA=
 
-APP=buttond
-APP_SRC=main.c
-
+APP=bubba-buttond
+APP_SRC=bubba-buttond.c
 
 OBJ=$(APP_SRC:%.c=%.o)
 
-APP2=write-magic
-APP2_SRC=write-magic.c
-OBJ2=$(APP2_SRC:%.c=%.o)
-
-SOURCES=$(APP_SRC) $(APP2_SRC)
-APPS=$(APP) $(APP2)
-OBJS=$(OBJ) $(OBJ2)
+SOURCES=$(APP_SRC)
+APPS=$(APP)
+OBJS=$(OBJ)
 DEPDIR = .deps
 
 all: pre $(APPS)
@@ -39,10 +33,6 @@ pre:
 
 $(APP): $(OBJ)
 	$(CC) $(LDFLAGS) $(LDFLAGS_EXTRA) $^ -o $@
-
-$(APP2): $(OBJ2)
-	$(CC) $(LDFLAGS) $(LDFLAGS_EXTRA) $^ -o $@
-
 
 clean:                                                                          
 	rm -f *~ $(APPS) $(OBJS)

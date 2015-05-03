@@ -9,7 +9,6 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mtd/mtd-user.h>
 #include <errno.h>
 #include <stddef.h>
 
@@ -21,24 +20,13 @@
 #define PIDFILE				"/var/run/buttond.pid"
 #endif
 
-#ifndef REBOOTCMD
-#define REBOOTCMD			"/sbin/reboot"
+#ifndef HALTCMD
+#define	HALTCMD				"/sbin/shutdown -h now"
 #endif
-
-#ifndef MTD_PART
-#define MTD_PART 			"/dev/mtd2"
-#endif
-
-#define BLOCK_START			0x110000
-#define BLOCK_SIZE			0x10000
-#define REBOOT_MAGIC		0xdeadbeef
 
 #define B_KEY_DOWN			0x1
 #define B_KEY_UP			0x0
 #define POWER_DOWN_DELAY	2
-
-// Forwards
-static int write_magic();
 
 static int dorun = 1;
 
@@ -94,47 +82,12 @@ void sighandler(int signum){
 void sigshutdown(int signum){
 	if (signum == SIGALRM){
 		syslog(LOG_NOTICE, "Shuting down system");
-		if(write_magic()==0){
-			system(REBOOTCMD);
-		}
+		system(HALTCMD);
 		dorun=0;
 	}else{
 		syslog(LOG_NOTICE, "Invalid signal received: %d", signum);
 	}
 }
-
-
-static int write_magic(){
-	unsigned long value = REBOOT_MAGIC;
-	struct erase_info_user erase;
-	int fd;
-
-	if( (fd = open(MTD_PART,O_RDWR)) == -1){
-		syslog(LOG_ERR,"Failed to open device: %m");
-		return 1;
-	}
-
-	erase.start = BLOCK_START;
-	erase.length = BLOCK_SIZE;
-	if (ioctl (fd, MEMERASE, &erase) != 0) {
-		syslog(LOG_ERR,"Erase block failed: %m");
-		return 1;
-	}
-
-	if(lseek(fd, BLOCK_START, SEEK_SET) == -1) {
-		syslog(LOG_ERR,"Failed to seek to block: %m");
-		return 1;
-	}
-
-	if( write(fd,&value,sizeof(value)) != sizeof(value)){
-		syslog(LOG_ERR,"Failed to write value: %m");
-		return 1;
-	}
-
-	close(fd);
-	return 0;
-} 
-
 
 int main(int argc, char** argv){
 

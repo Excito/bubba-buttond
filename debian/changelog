@@ -1,3 +1,10 @@
+bubba-buttond (1.5) wheezy; urgency=low
+
+  * Adaptations for wheezy release
+  * Moved write-magic to bubba-halt source package
+
+ -- Charles Leclerc <leclerc.charles@gmail.com>  Sat, 02 May 2015 23:53:37 -0400
+
 bubba-buttond (1.4) vincent hugo; urgency=low
 
   * Added timeout on keypress fixing #1465 
